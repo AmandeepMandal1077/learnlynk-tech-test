@@ -35,6 +35,8 @@ create policy "leads_insert_policy" on public.leads
 for insert
 with check (
   tenant_id = current_setting("request.jwt.claim.tenant_id", true)::uuid
+  and
+  current_setting("request.jwt.claim.role", true) in ('admin', 'counselor')
 )
   -- TODO: add real RLS logic here, refer to README instructions
 
