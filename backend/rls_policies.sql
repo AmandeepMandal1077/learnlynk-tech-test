@@ -15,10 +15,10 @@ create policy "leads_select_policy"
 on public.leads
 for select
 using (
-  tenant_id = current_setting("request.jwt.claim.tenant_id", true)::uuid and 
+  tenant_id = current_setting('request.jwt.claim.tenant_id', true)::uuid and 
   (
-    current_setting("request.jwt.claim.role", true) = "admin" or
-    owner_id = current_setting("request.jwt.claim.sub", true)::uuid or
+    current_setting('request.jwt.claim.role', true) = 'admin' or
+    owner_id = current_setting('request.jwt.claim.sub', true)::uuid or
     owner_id in 
     (
       select user_id from public.user_teams 
@@ -34,9 +34,9 @@ using (
 create policy "leads_insert_policy" on public.leads
 for insert
 with check (
-  tenant_id = current_setting("request.jwt.claim.tenant_id", true)::uuid
+  tenant_id = current_setting('request.jwt.claim.tenant_id', true)::uuid
   and
-  current_setting("request.jwt.claim.role", true) in ('admin', 'counselor')
+  current_setting('request.jwt.claim.role', true) in ('admin', 'counselor')
 )
   -- TODO: add real RLS logic here, refer to README instructions
 
