@@ -11,14 +11,32 @@ alter table public.leads enable row level security;
 
 
 -- Example skeleton for SELECT (replace with your own logic):
-
 create policy "leads_select_policy"
 on public.leads
 for select
 using (
-  true
-  -- TODO: add real RLS logic here, refer to README instructions
+  tenant_id = current_setting("request.jwt.claim.tenant_id", true)::uuid and 
+  (
+    current_setting("request.jwt.claim.role", true) = "admin" or
+    owner_id = current_setting("request.jwt.claim.sub", true)::uuid or
+    owner_id in 
+    (
+      select user_id from public.user_teams 
+      where team_id in 
+      (
+        select team_id from public.user_teams 
+        where user_id = current_setting("request.jwt.claim.sub", true)::uuid
+      )
+    )
+  )
 );
+
+create policy "leads_insert_policy" on public.leads
+for insert
+with check (
+  tenant_id = current_setting("request.jwt.claim.tenant_id", true)::uuid
+)
+  -- TODO: add real RLS logic here, refer to README instructions
 
 -- TODO: add INSERT policy that:
 -- - allows counselors/admins to insert leads for their tenant

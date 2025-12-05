@@ -17,6 +17,8 @@ create table if not exists public.leads (
   updated_at timestamptz not null default now()
 );
 
+create index if not exists idx_leads_tenant_id_owner_id_stage on public.leads(tenant_id, owner_id, stage);
+
 -- TODO: add useful indexes for leads:
 -- - by tenant_id, owner_id, stage, created_at
 
@@ -34,22 +36,30 @@ create table if not exists public.applications (
   updated_at timestamptz not null default now()
 );
 
+create index if not exists idx_applications_tenant_id_lead_id on public.applications(tenant_id, lead_id);
 -- TODO: add useful indexes for applications:
 -- - by tenant_id, lead_id, stage
 
 
+create type public.tasktype as enum ('call', 'email', 'review');
 -- Tasks table
 create table if not exists public.tasks (
   id uuid primary key default gen_random_uuid(),
   tenant_id uuid not null,
   application_id uuid not null references public.applications(id) on delete cascade,
   title text,
-  type text not null,
+  type public.tasktype not null,
   status text not null default 'open',
   due_at timestamptz not null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+create index if not exists idx_tasks_tenant_id_due_at_status on public.tasks(tenant_id, due_at, status);
+
+alter table public.tasks
+add constraint check_due_at_gte_created_at check (due_at >= created_at);
+
 
 -- TODO:
 -- - add check constraint for type in ('call','email','review')
