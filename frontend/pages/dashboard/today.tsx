@@ -57,7 +57,8 @@ export default function TodayDashboard() {
         .update({ status: "completed" })
         .eq("id", id);
       if (error) throw error;
-      await fetchTasks();
+
+      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
     } catch (err: any) {
       console.error(err);
       alert("Failed to update task");
