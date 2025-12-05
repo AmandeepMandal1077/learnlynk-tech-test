@@ -30,7 +30,15 @@ export default function TodayDashboard() {
       //   .select("*")
       //   .eq("status", "open");
 
-      setTasks([]);
+      const today = new Date().toISOString().slice(0, 10);
+      const { data, error } = await supabase
+        .from("tasks")
+        .select("*")
+        .neq("status", "completed")
+        .gte("due_at", `${today}T00:00:00`)
+        .lte("due_at", `${today}T23:59:59`);
+      if (error) throw error;
+      setTasks(data || []);
     } catch (err: any) {
       console.error(err);
       setError("Failed to load tasks");
@@ -44,6 +52,12 @@ export default function TodayDashboard() {
       // TODO:
       // - Update task.status to 'completed'
       // - Re-fetch tasks or update state optimistically
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: "completed" })
+        .eq("id", id);
+      if (error) throw error;
+      await fetchTasks();
     } catch (err: any) {
       console.error(err);
       alert("Failed to update task");
