@@ -25,7 +25,7 @@ using (
       where team_id in 
       (
         select team_id from public.user_teams 
-        where user_id = current_setting("request.jwt.claim.sub", true)::uuid
+        where user_id = current_setting('request.jwt.claim.sub', true)::uuid
       )
     )
   )
